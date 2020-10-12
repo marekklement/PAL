@@ -20,7 +20,8 @@ public class SolverPrim {
 		visited[capital] = true;
 		int visitedAll = 1;
 
-		for (int i = 0; i < tableOfRoads.get(capital).size(); i++) {
+		int num = tableOfRoads.get(capital).size();
+		for (int i = 0; i < num; i++) {
 			Node node = tableOfRoads.get(capital).get(i);
 			primaryQueue.add(node);
 		}
@@ -29,8 +30,9 @@ public class SolverPrim {
 				break;
 			}
 			if(primaryQueue.isEmpty()){
+				PriorityQueue<Node> swap = primaryQueue;
 				primaryQueue = secondPriority;
-				secondPriority = new PriorityQueue<>();
+				secondPriority = swap;
 			}
 			Node current = primaryQueue.poll();
 
@@ -40,7 +42,9 @@ public class SolverPrim {
 			visited[current.index] = true;
 			visitedAll+=1;
 			cost += current.weight;
-			for (int i = 0; i < tableOfRoads.get(current.index).size(); i++) {
+			if(visitedAll == numberOfCities) break;
+			int number = tableOfRoads.get(current.index).size();
+			for (int i = 0; i < number; i++) {
 				Node node = tableOfRoads.get(current.index).get(i);
 				if(visited[node.index]) continue;
 				if(node.level == current.level ) {
@@ -60,21 +64,26 @@ public class SolverPrim {
 		Queue<Node> queue = new LinkedList<>();
 		boolean visited[] = new boolean[numberOfCities];
 		visited[capital] = true;
+		int visitedAll = 1;
 
-		for (int i = 0; i < tableOfRoads.get(capital).size(); i++) {
+		int num = tableOfRoads.get(capital).size();
+		for (int i = 0; i < num; i++) {
 			Node node = tableOfRoads.get(capital).get(i);
 			node.level = 1;
 			levels[node.index] = 1;
 			queue.add(node);
 		}
 		while (!queue.isEmpty()) {
+			if(visitedAll == numberOfCities) break;
 			Node current = queue.remove();
 			if (visited[current.index]) {
 				continue;
 			}
 			int level = current.level + 1;
 			visited[current.index] = true;
-			for (int i = 0; i < tableOfRoads.get(current.index).size(); i++) {
+			visitedAll+=1;
+			int number = tableOfRoads.get(current.index).size();
+			for (int i = 0; i < number; i++) {
 				Node node = tableOfRoads.get(current.index).get(i);
 				if(levels[node.index] != 0){
 					node.level = levels[node.index];
