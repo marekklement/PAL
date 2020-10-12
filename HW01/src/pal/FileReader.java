@@ -4,23 +4,29 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Vector;
 
 public class FileReader {
 
-	public HighWayMap read() throws IOException {
-		HighWayMap map = new HighWayMap();
+	int capitalCity = -1;
+
+	public Vector<Vector<Node>> read() throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		int[] line = Arrays.stream(reader.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-		map.setCities(line[0]);
-		map.setRoads(line[1]);
-		map.setCapitalCity(line[2]);
-		int[][] table = new int[map.getCities()][map.getCities()];
-		for(int i = 0; i < map.getRoads(); i++){
-			int[] trip = Arrays.stream(reader.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-			table[trip[0]][trip[1]] = trip[2];
-			table[trip[1]][trip[0]] = trip[2];
+		Vector<Vector<Node>> map = new Vector<>();
+		int cities = line[0];
+		int roads = line[1];
+		capitalCity = line[2];
+		for(int i = 0; i < cities; i++){
+			map.add(i, new Vector<>());
 		}
-		map.setTable(table);
+		for(int i = 0; i < roads; i++){
+			int[] road = Arrays.stream(reader.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+			Node first = new Node(road[2],road[0]);
+			Node second = new Node(road[2],road[1]);
+			map.elementAt(road[0]).add(second);
+			map.elementAt(road[1]).add(first);
+		}
 		return map;
 	}
 }
