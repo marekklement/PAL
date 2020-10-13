@@ -21,19 +21,28 @@ int cities;
 int roads;
 vector<vector<Node>> tableOfRoads;
 
+inline void readNumber(int *x) {
+    register char c = getchar_unlocked();
+    *x = 0;
+    for (; (c < 48) || (c > 57); c = getchar_unlocked());
+    for (; (c > 47) && (c < 58); c = getchar_unlocked()) {
+        *x = (int) ((((*x) << 1) + ((*x) << 3)) + c - 48);
+    }
+}
+
 void read() {
-    cin >> cities;
-    cin >> roads;
-    cin >> capitalCity;
+    readNumber(& cities);
+    readNumber(& roads);
+    readNumber(& capitalCity);
 
     vector<vector<Node>> map(cities);
     for(int i = 0; i < roads; i++){
         int from, to, cost;
-        cin >> from;
-        cin >> to;
-        cin >> cost;
-        Node first = {.index = from, .weight = cost};
-        Node second = {.index = to, .weight = cost};
+        readNumber(& from);
+        readNumber(& to);
+        readNumber(& cost);
+        Node first = {.weight = cost,.index = from};
+        Node second = {.weight = cost,.index = to};
         map.at(from).push_back(second);
         map.at(to).push_back(first);
     }
@@ -46,6 +55,11 @@ void getLevels(){
     bool visited[cities];
     visited[capitalCity] = true;
     int visitedAll = 1;
+
+    for(int i = 0; i< cities; i++){
+        levels[i] = 0;
+        visited[i] = false;
+    }
 
     int num = tableOfRoads.at(capitalCity).size();
     for (int i = 0; i < num; i++) {
@@ -89,6 +103,10 @@ int prim() {
     priority_queue<Node, vector<Node>, NodeGreater> secondPriority;
 
     bool visited[numberOfCities];
+
+    for(int i = 0; i< cities; i++){
+        visited[i] = false;
+    }
 
     visited[capitalCity] = true;
     int visitedAll = 1;
