@@ -1,8 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <stack>
-#include <algorithm>
-#include <iterator>
 
 using namespace std;
 
@@ -52,65 +50,58 @@ void read(){
 
 
 stack<int> stck;
-int* d;
+int* diskStash;
 int* low;
-int* scc;
+int* strongComponents;
 bool* stacked;
 bool* saves;
 int counter;
 int current;
 
 void init(){
-    d = new int[busStops];
+    diskStash = new int[busStops];
     low = new int[busStops];
-    scc = new int[busStops];
+    strongComponents = new int[busStops];
     stacked = new bool[busStops];
     saves = new bool[busStops];
     for(int i = 0; i < busStops; i++){
-        d[i] = -1;
+        diskStash[i] = -1;
         stacked[i] = false;
         saves[i] = true;
+        strongComponents[i] = -1;
     }
 }
 
-void tarjan(int u){
-    d[u] = low[u] = counter++;
-    stck.push(u);
-    stacked[u] = true;
-    const vector<int> &out = cityMap.at(u).to;
-    for (int k=0, m=out.size(); k<m; ++k){
-        const int &v = out[k];
-        if (d[v] == -1){
-            tarjan(v);
-            low[u] = min(low[u], low[v]);
-        }else if (stacked[v]){
-            low[u] = min(low[u], low[v]);
+void tarjan(int number){
+    diskStash[number] = low[number] = counter++;
+    stck.push(number);
+    stacked[number] = true;
+    const vector<int> &out = cityMap.at(number).to;
+    int num = out.size();
+    for (int i=0; i < num; ++i){
+        const int &node = out[i];
+        if (diskStash[node] == -1){
+            tarjan(node);
+            low[number] = min(low[number], low[node]);
+        }else if (stacked[node]){
+            low[number] = min(low[number], low[node]);
         }
     }
-    if (d[u] == low[u]){
-        int v;
-        do{
-            v = stck.top();
+    if (diskStash[number] == low[number]){
+        int node;
+        while(1){
+            node = stck.top();
             stck.pop();
-            stacked[v] = false;
-            scc[v] = current;
-        }while (u != v);
+            stacked[node] = false;
+            strongComponents[node] = current;
+            if(number == node) break;
+        }
         current++;
     }
 }
 
 int* kondenzat;
 vector<Way> kondenzGraph;
-
-void printSCC(){
-    for(int i = 0; i < current; i++) {
-        printf("Node %d have number of saves: %d with nexts", i, kondenzat[i]);
-        for (int j = 0; j < kondenzGraph.at(i).to.size(); j++) {
-            printf(" %d", kondenzGraph.at(i).to.at(j));
-        }
-        printf("\n");
-    }
-}
 
 void findSaves(){
     for(int i = 0; i < busStops; i++){
@@ -119,7 +110,7 @@ void findSaves(){
         vector<int> froms = way.froms;
         int size = froms.size();
         for(int j = 0; j < size; j++){
-            if(scc[i] != scc[froms.at(j)]){
+            if(strongComponents[i] != strongComponents[froms.at(j)]){
                 saves[i] = false;
                 break;
             }
@@ -128,7 +119,7 @@ void findSaves(){
         vector<int> toes = way.to;
         int num = toes.size();
         for(int j = 0; j < num; j++){
-            if(scc[i] != scc[toes.at(j)]){
+            if(strongComponents[i] != strongComponents[toes.at(j)]){
                 saves[i] = false;
                 break;
             }
@@ -141,8 +132,9 @@ void makeKondenzedGraph(){
         Way way = {.from = i};
         kondenzGraph.push_back(way);
     }
-    bool added[current][current];
+    bool** added = new bool*[current];
     for(int i = 0; i < current; i++){
+        added[i] = new bool[current];
         for (int j = 0; j < current; ++j) {
             added[i][j] = false;
         }
@@ -153,42 +145,50 @@ void makeKondenzedGraph(){
         int end = toes.size();
         for(int j = 0; j < end; j++){
             int tod = toes.at(j);
-            if(scc[i] != scc[tod] && !added[scc[i]][scc[tod]]){
-                added[scc[i]][scc[tod]] = true;
-                kondenzGraph.at(scc[i]).to.push_back(scc[tod]);
+            if(strongComponents[i] != strongComponents[tod] && !added[strongComponents[i]][strongComponents[tod]]){
+                added[strongComponents[i]][strongComponents[tod]] = true;
+                Way way = kondenzGraph.at(strongComponents[i]);
+                vector<int> vec = way.to;
+                vec.push_back(strongComponents[tod]);
+                way.to = vec;
+                kondenzGraph.at(strongComponents[i]) = way;
             }
         }
     }
 }
 
+int* visitedValues;
+
 int dfs(int sum, int u){
-    vector<int> toes = kondenzGraph.at(u).to;
-    int num = toes.size();
     int ret = sum + kondenzat[u];
     int currentMax = 0;
-    for (int i=0; i < num; i++){
-        int v = toes.at(i);
-        int back = dfs(0,v);
-        if(back > currentMax) currentMax = back;
+    if(visitedValues[u] == -1) {
+        vector<int> toes = kondenzGraph.at(u).to;
+        int num = toes.size();
+        for (int i = 0; i < num; i++) {
+            int v = toes.at(i);
+            int back = dfs(0, v);
+            if (back > currentMax) currentMax = back;
+        }
+        visitedValues[u] = currentMax;
+    } else {
+        currentMax = visitedValues[u];
     }
     return ret + currentMax;
 }
 
 int kondenz(){
     kondenzat = new int[current];
-    bool visited[current];
+    visitedValues = new int[current];
     for(int i = 0; i < current; i++){
         kondenzat[i] = 0;
-        visited[i] = false;
+        visitedValues[i] = -1;
     }
     for(int i = 0; i < busStops; i++){
         if(saves[i]){
-            kondenzat[scc[i]] += 1;
+            kondenzat[strongComponents[i]] += 1;
         }
     }
-    printSCC();
-    printf("\n");
-    //
     int top = 0;
 
     for(int i = 0; i < current; i++){
@@ -200,14 +200,27 @@ int kondenz(){
     return top;
 }
 
+void remove(){
+    delete[] diskStash;
+    delete[] low;
+    delete[] strongComponents;
+    delete[] stacked;
+    delete[] saves;
+    delete[] visitedValues;
+    delete[] kondenzat;
+}
+
 int main() {
     read();
     init();
-    tarjan(0);
+    for (int i = 0; i < busStops; i++) {
+        if(diskStash[i] == -1)
+            tarjan(i);
+    }
     findSaves();
     makeKondenzedGraph();
     int end = kondenz();
-    //printSCC();
+    remove();
     printf("%d",end);
     return 0;
 }
