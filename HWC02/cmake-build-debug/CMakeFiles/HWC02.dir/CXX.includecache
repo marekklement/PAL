@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/testtest/Documents/school/PAL/HWC02/main.cpp
+iostream
+-
+vector
+-
+stack
+-
+algorithm
+-
+iterator
+-
+

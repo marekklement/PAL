@@ -1,0 +1,3 @@
+/Users/testtest/Documents/school/PAL/HWC00/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/testtest/Documents/school/PAL/HWC00/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/testtest/Documents/school/PAL/HWC00/cmake-build-debug/CMakeFiles/HWC00.dir
