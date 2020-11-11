@@ -117,11 +117,13 @@ void solve(string str, int depthLocalMax){
                             //cout << " FINAL " << endl;
                             //cout << comp << endl;
                             //cout << " ENDL " << endl;
+                            //todo
                             compsT1[comp] = 1;
                             if(maximumD -1 >= depthMin) {
-                                solve(comp, depthLocalMax - 1);
+                                solve(comp, maximumD - 1);
                             }
                         }
+                        compsT1[str]+= compsT1[comp];
                     } else {
                         while (!qu.empty()) {
                             qu.pop();
@@ -135,6 +137,96 @@ void solve(string str, int depthLocalMax){
                     }
                     flag = false;
                     solve(comp, depthLocalMax);
+                }
+            }
+        }
+    }
+}
+
+int globalCount = 0;
+
+void solveEnd(string str, int depthLocalMax){
+    queue<char> qu;
+    vector<int> depths(depthLocalMax + 2);
+    fill(depths.begin(), depths.end(), 0);
+    int nodeCount = 0;
+    int depthCount = 0;
+    int maximumD = 0;
+    bool flag = false;
+    for(char& c : str) {
+        //print(qu);
+        if(c == nula){
+            if(qu.empty()){
+                nodeCount = 0;
+                depthCount = -1;
+                maximumD = 0;
+                fill(depths.begin(), depths.end(), 0);
+            }
+            qu.push(c);
+            depthCount++;
+            nodeCount++;
+            depths.at(depthCount)++;
+            if(!flag) {
+                if (nodeCount > nodeMax || depthCount > depthLocalMax) {
+                    if(depthCount -1 < depthMin){
+                        while (!qu.empty()) {
+                            qu.pop();
+                        }
+                        continue;
+                    }
+                    qu.pop();
+                    depthCount--;
+                    nodeCount--;
+                    maximumD--;
+                    if (depths.at(1) == 1) {
+                        for (int i = 0; i <= depthCount; ++i) {
+                            depths.at(i) = depths.at(i + 1);
+                        }
+                        for (int i = depthCount + 1; i < depths.size(); ++i) {
+                            depths.at(i) = 0;
+                        }
+                        //depths.at(depthCount) = 0;
+                    } else {
+                        flag = true;
+                    }
+                }
+            }
+            maximumD = max(maximumD, depthCount);
+        } else {
+            if(qu.empty()) continue;
+            qu.push(c);
+            depthCount--;
+            if (depthCount == -1){
+                if(!flag) {
+                    if (maximumD >= depthMin && nodeCount >= nodesMin) {
+                        string comp = "";
+                        while (!qu.empty()) {
+                            comp += qu.front();
+                            qu.pop();
+                        }
+                        if (compsT1.find(comp) != compsT1.end()) {
+                            //cout << " FINAL " << endl;
+                            //cout << comp << endl;
+                            //cout << " ENDL " << endl;
+                            //todo
+                            globalCount+=compsT1[comp];
+                        } else
+                        if(maximumD -1 >= depthMin) {
+                            solveEnd(comp, maximumD - 1);
+                        }
+                    } else {
+                        while (!qu.empty()) {
+                            qu.pop();
+                        }
+                    }
+                } else {
+                    string comp = "";
+                    while (!qu.empty()) {
+                        comp += qu.front();
+                        qu.pop();
+                    }
+                    flag = false;
+                    solveEnd(comp, depthLocalMax);
                 }
             }
         }
@@ -161,6 +253,8 @@ int compare(){
 int main() {
     read();
     solve(t1, depthMax);
-    cout << compare() << endl;
+    solveEnd(t2, depthMax);
+    cout << globalCount << endl;
+    //cout << compare() << endl;
     return 0;
 }
